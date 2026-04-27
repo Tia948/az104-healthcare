@@ -1,1 +1,26 @@
+// KQL 1 - Toutes les opérations des dernières 24h
+StorageBlobLogs
+| where TimeGenerated > ago(24h)
+| project TimeGenerated, OperationName, CallerIpAddress
+| order by TimeGenerated desc
 
+/ KQL 2 - Top IP par volume
+StorageBlobLogs
+| summarize count() by CallerIpAddress
+| order by count_ desc
+
+// KQL 3 - Activité par heure
+StorageBlobLogs
+| summarize count() by bin(TimeGenerated, 1h)
+| render timechart
+
+// KQL 4 - Erreurs HTTP
+StorageBlobLogs
+| where tolong(StatusCode) > 399
+| project TimeGenerated, StatusCode, OperationName, CallerIpAddress
+
+// KQL 5 - Accès IP externes
+StorageBlobLogs
+| where CallerIpAddress !startswith "10."
+| where CallerIpAddress !startswith "192.168."
+| project TimeGenerated, CallerIpAddress, OperationName
